@@ -32,11 +32,12 @@ export async function fetchFredSeries(
     next: { revalidate: CACHE_TTL },
   });
 
-  if (!res.ok) {
-    throw new Error(`FRED API error for ${seriesId}: ${res.status}`);
-  }
-
   const data = await res.json();
+
+  if (!res.ok) {
+    const errMsg = data.error_message ?? data.error_code ?? `HTTP ${res.status}`;
+    throw new Error(`FRED API error for ${seriesId}: ${errMsg}`);
+  }
 
   if (data.error_code || data.error_message) {
     throw new Error(`FRED API error for ${seriesId}: ${data.error_message ?? data.error_code}`);
