@@ -52,6 +52,14 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    const allEmpty = Object.values(series).every((arr) => arr.length === 0);
+    if (allEmpty) {
+      return Response.json(
+        { error: "All FRED series returned empty data — check API key validity", series, meta },
+        { status: 502 }
+      );
+    }
+
     return Response.json({ series, meta });
   } catch (error) {
     const message =

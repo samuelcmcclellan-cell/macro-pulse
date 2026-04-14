@@ -37,6 +37,11 @@ export async function fetchFredSeries(
   }
 
   const data = await res.json();
+
+  if (data.error_code || data.error_message) {
+    throw new Error(`FRED API error for ${seriesId}: ${data.error_message ?? data.error_code}`);
+  }
+
   const observations = data.observations ?? [];
 
   return observations
@@ -64,7 +69,12 @@ export async function fetchMultipleFredSeries(
   const data: Record<string, TimeSeriesPoint[]> = {};
   seriesIds.forEach((id, i) => {
     const result = results[i];
-    data[id] = result.status === "fulfilled" ? result.value : [];
+    if (result.status === "fulfilled") {
+      data[id] = result.value;
+    } else {
+      console.error(`FRED fetch failed for ${id}:`, result.reason);
+      data[id] = [];
+    }
   });
 
   return data;
