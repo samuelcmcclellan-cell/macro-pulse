@@ -61,23 +61,26 @@ export async function fetchMultipleFredSeries(
     endDate?: string;
     limit?: number;
   }
-): Promise<Record<string, TimeSeriesPoint[]>> {
+): Promise<{ data: Record<string, TimeSeriesPoint[]>; errors: Record<string, string> }> {
   const results = await Promise.allSettled(
     seriesIds.map((id) => fetchFredSeries(id, options))
   );
 
   const data: Record<string, TimeSeriesPoint[]> = {};
+  const errors: Record<string, string> = {};
   seriesIds.forEach((id, i) => {
     const result = results[i];
     if (result.status === "fulfilled") {
       data[id] = result.value;
     } else {
-      console.error(`FRED fetch failed for ${id}:`, result.reason);
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+      console.error(`FRED fetch failed for ${id}:`, msg);
+      errors[id] = msg;
       data[id] = [];
     }
   });
 
-  return data;
+  return { data, errors };
 }
 
 export function computeYoY(series: TimeSeriesPoint[]): TimeSeriesPoint[] {

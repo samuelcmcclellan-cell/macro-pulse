@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { fetchYahooChart, fetchMultipleYahooQuotes } from "@/lib/api/yahoo";
 
-export const revalidate = 14400; // 4 hours
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { fetchMultipleFredSeries, computeYoY, computeMonthlyChange } from "@/lib/api/fred";
 
-export const revalidate = 14400; // 4 hours
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const seriesIds = seriesParam.split(",").map((s) => s.trim());
 
   try {
-    const rawData = await fetchMultipleFredSeries(seriesIds, {
+    const { data: rawData, errors: fetchErrors } = await fetchMultipleFredSeries(seriesIds, {
       startDate,
       limit,
     });
@@ -55,12 +55,12 @@ export async function GET(request: NextRequest) {
     const allEmpty = Object.values(series).every((arr) => arr.length === 0);
     if (allEmpty) {
       return Response.json(
-        { error: "All FRED series returned empty data — check API key validity", series, meta },
+        { error: "All FRED series returned empty data", errors: fetchErrors, series, meta },
         { status: 502 }
       );
     }
 
-    return Response.json({ series, meta });
+    return Response.json({ series, meta, ...(Object.keys(fetchErrors).length > 0 && { errors: fetchErrors }) });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown error";
