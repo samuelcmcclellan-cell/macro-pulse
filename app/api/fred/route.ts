@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     ? parseInt(searchParams.get("limit")!, 10)
     : undefined;
   const transform = searchParams.get("transform"); // "yoy" | "mom_change" | null
+  const units = searchParams.get("units") ?? undefined; // e.g. "pc1" for percent change from year ago
 
   if (!seriesParam) {
     return Response.json(
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     const { data: rawData, errors: fetchErrors } = await fetchMultipleFredSeries(seriesIds, {
       startDate,
       limit,
+      units,
     });
 
     const series: Record<string, { date: string; value: number }[]> = {};

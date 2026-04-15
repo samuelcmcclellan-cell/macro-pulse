@@ -16,6 +16,14 @@ import { useFetch } from "../hooks/useFetch";
 import { CHART_COLORS } from "@/lib/config";
 import type { FredApiResponse } from "@/lib/types";
 
+function toQuarterLabel(dateStr: string): string {
+  if (!dateStr) return "—";
+  const month = parseInt(dateStr.slice(5, 7), 10);
+  const year = dateStr.slice(0, 4);
+  const quarter = Math.ceil(month / 3);
+  return `Q${quarter} ${year}`;
+}
+
 export default function GrowthModule() {
   const { data, loading, error } = useFetch<FredApiResponse>(
     "/api/fred?series=A191RL1Q225SBEA,GDPC1&start=2015-01-01"
@@ -44,19 +52,19 @@ export default function GrowthModule() {
         <StatCallout
           label="Real GDP Growth (SAAR)"
           value={`${latestGrowth?.latestValue?.toFixed(1) ?? "—"}%`}
-          subValue={latestGrowth?.latestDate?.slice(0, 7)}
+          subValue={toQuarterLabel(latestGrowth?.latestDate ?? "")}
           direction={
             (latestGrowth?.latestValue ?? 0) >= 0 ? "up" : "down"
           }
         />
         <StatCallout
-          label="Real GDP Level ($B)"
+          label="Real GDP Level"
           value={
             latestGdp?.latestValue
               ? `$${(latestGdp.latestValue / 1000).toFixed(1)}T`
               : "—"
           }
-          subValue={latestGdp?.latestDate?.slice(0, 7)}
+          subValue={toQuarterLabel(latestGdp?.latestDate ?? "")}
         />
       </div>
 

@@ -74,7 +74,7 @@ export default function FedRatesModule() {
         />
         <StatCallout
           label="2s10s Spread"
-          value={`${data?.meta?.T10Y2Y?.latestValue?.toFixed(0) ?? "—"} bps`}
+          value={`${data?.meta?.T10Y2Y?.latestValue != null ? (data.meta.T10Y2Y.latestValue * 100).toFixed(0) : "—"} bps`}
           direction={
             (data?.meta?.T10Y2Y?.latestValue ?? 0) >= 0 ? "up" : "down"
           }

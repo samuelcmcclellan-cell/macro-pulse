@@ -39,13 +39,12 @@ export async function GET(request: NextRequest) {
     symbols.forEach((s, i) => {
       const result = results[i];
       if (result.status === "fulfilled") {
-        const data = result.value;
-        quotes[s] = data.map((d) => ({ date: d.date, close: d.close }));
-        const first = data[0]?.close ?? 0;
-        const last = data[data.length - 1]?.close ?? 0;
+        const { quotes: q, chartPreviousClose } = result.value;
+        quotes[s] = q.map((d) => ({ date: d.date, close: d.close }));
+        const last = q[q.length - 1]?.close ?? 0;
         meta[s] = {
           currentPrice: last,
-          ytdReturn: first !== 0 ? ((last - first) / first) * 100 : 0,
+          ytdReturn: chartPreviousClose !== 0 ? ((last - chartPreviousClose) / chartPreviousClose) * 100 : 0,
         };
       } else {
         quotes[s] = [];

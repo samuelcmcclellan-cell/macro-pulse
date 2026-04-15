@@ -10,6 +10,7 @@ export async function fetchFredSeries(
     endDate?: string;
     limit?: number;
     sortOrder?: "asc" | "desc";
+    units?: string;
   }
 ): Promise<TimeSeriesPoint[]> {
   const apiKey = process.env.FRED_API_KEY;
@@ -24,6 +25,7 @@ export async function fetchFredSeries(
     sort_order: options?.sortOrder ?? "asc",
   });
 
+  if (options?.units) params.set("units", options.units);
   if (options?.limit) params.set("limit", String(options.limit));
   if (options?.startDate) params.set("observation_start", options.startDate);
   if (options?.endDate) params.set("observation_end", options.endDate);
@@ -61,6 +63,7 @@ export async function fetchMultipleFredSeries(
     startDate?: string;
     endDate?: string;
     limit?: number;
+    units?: string;
   }
 ): Promise<{ data: Record<string, TimeSeriesPoint[]>; errors: Record<string, string> }> {
   const results = await Promise.allSettled(
@@ -114,7 +117,7 @@ export function computeMonthlyChange(
     result.push({
       date: series[i].date,
       value: parseFloat(
-        ((series[i].value - series[i - 1].value) * 1000).toFixed(1)
+        (series[i].value - series[i - 1].value).toFixed(1)
       ),
     });
   }

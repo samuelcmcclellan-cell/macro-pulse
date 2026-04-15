@@ -19,7 +19,7 @@ import type { FredApiResponse } from "@/lib/types";
 
 export default function InflationModule() {
   const { data, loading, error } = useFetch<FredApiResponse>(
-    "/api/fred?series=CPIAUCSL,CPILFESL,PCEPI,PCEPILFE&start=2018-01-01&transform=yoy"
+    "/api/fred?series=CPIAUCSL,CPILFESL,PCEPI,PCEPILFE&start=2020-01-01&units=pc1"
   );
 
   if (loading) return <ModuleSkeleton />;

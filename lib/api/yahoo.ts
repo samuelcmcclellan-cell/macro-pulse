@@ -2,11 +2,16 @@ import { YahooQuote } from "../types";
 
 const CACHE_TTL = 14400; // 4 hours
 
+export interface YahooChartResult {
+  quotes: YahooQuote[];
+  chartPreviousClose: number;
+}
+
 export async function fetchYahooChart(
   symbol: string,
   range: string = "1y",
   interval: string = "1d"
-): Promise<YahooQuote[]> {
+): Promise<YahooChartResult> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}&includePrePost=false`;
 
   const res = await fetch(url, {
@@ -29,15 +34,19 @@ export async function fetchYahooChart(
 
   const timestamps: number[] = result.timestamp ?? [];
   const quotes = result.indicators?.quote?.[0] ?? {};
+  const meta = result.meta ?? {};
 
-  return timestamps.map((ts: number, i: number) => ({
-    date: new Date(ts * 1000).toISOString().split("T")[0],
-    close: quotes.close?.[i] ?? 0,
-    open: quotes.open?.[i] ?? 0,
-    high: quotes.high?.[i] ?? 0,
-    low: quotes.low?.[i] ?? 0,
-    volume: quotes.volume?.[i] ?? 0,
-  }));
+  return {
+    quotes: timestamps.map((ts: number, i: number) => ({
+      date: new Date(ts * 1000).toISOString().split("T")[0],
+      close: quotes.close?.[i] ?? 0,
+      open: quotes.open?.[i] ?? 0,
+      high: quotes.high?.[i] ?? 0,
+      low: quotes.low?.[i] ?? 0,
+      volume: quotes.volume?.[i] ?? 0,
+    })),
+    chartPreviousClose: meta.chartPreviousClose ?? meta.previousClose ?? 0,
+  };
 }
 
 export async function fetchYahooQuoteSummary(symbol: string): Promise<{

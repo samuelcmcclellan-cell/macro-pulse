@@ -31,12 +31,12 @@ export default function CreditModule() {
   for (const p of ig) {
     const d = p.date.slice(0, 7);
     if (!dateMap.has(d)) dateMap.set(d, {});
-    dateMap.get(d)!.ig = p.value;
+    dateMap.get(d)!.ig = p.value * 100; // convert % to bps
   }
   for (const p of hy) {
     const d = p.date.slice(0, 7);
     if (!dateMap.has(d)) dateMap.set(d, {});
-    dateMap.get(d)!.hy = p.value;
+    dateMap.get(d)!.hy = p.value * 100; // convert % to bps
   }
 
   const chartData = Array.from(dateMap.entries())
@@ -57,16 +57,16 @@ export default function CreditModule() {
       <div className="flex gap-8 mb-5">
         <StatCallout
           label="IG OAS (bps)"
-          value={`${latestIG?.latestValue?.toFixed(0) ?? "—"} bps`}
+          value={`${latestIG?.latestValue != null ? (latestIG.latestValue * 100).toFixed(0) : "—"} bps`}
           direction={
-            (latestIG?.latestValue ?? 0) > 150 ? "down" : "neutral"
+            (latestIG?.latestValue ?? 0) * 100 > 150 ? "down" : "neutral"
           }
         />
         <StatCallout
           label="HY OAS (bps)"
-          value={`${latestHY?.latestValue?.toFixed(0) ?? "—"} bps`}
+          value={`${latestHY?.latestValue != null ? (latestHY.latestValue * 100).toFixed(0) : "—"} bps`}
           direction={
-            (latestHY?.latestValue ?? 0) > 400 ? "down" : "neutral"
+            (latestHY?.latestValue ?? 0) * 100 > 400 ? "down" : "neutral"
           }
         />
       </div>
