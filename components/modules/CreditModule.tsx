@@ -17,6 +17,9 @@ import { useFetch } from "../hooks/useFetch";
 import { CHART_COLORS } from "@/lib/config";
 import type { FredApiResponse } from "@/lib/types";
 
+// TODO(data-team): Verify IG OAS value against FRED series BAMLC0A0CM.
+// Apr 2026 audit flagged 82 bps as unverifiable from public sources.
+// If the FRED feed is correct, no action needed.
 export default function CreditModule() {
   const { data, loading, error } = useFetch<FredApiResponse>(
     "/api/fred?series=BAMLC0A0CM,BAMLH0A0HYM2&start=2019-01-01"

@@ -17,6 +17,12 @@ import { useFetch } from "../hooks/useFetch";
 import { CHART_COLORS } from "@/lib/config";
 import type { FredApiResponse } from "@/lib/types";
 
+function formatDataPeriod(dateStr?: string): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 export default function InflationModule() {
   const { data, loading, error } = useFetch<FredApiResponse>(
     "/api/fred?series=CPIAUCSL,CPILFESL,PCEPI,PCEPILFE&start=2020-01-01&units=pc1"
@@ -79,6 +85,18 @@ export default function InflationModule() {
           }
         />
       </div>
+      {(() => {
+        const cpiPeriod = formatDataPeriod(data?.meta?.CPIAUCSL?.latestDate);
+        const pcePeriod = formatDataPeriod(data?.meta?.PCEPILFE?.latestDate);
+        if (cpiPeriod && pcePeriod && cpiPeriod !== pcePeriod) {
+          return (
+            <p className="text-[10px] text-[#5a6478] -mt-3 mb-4">
+              CPI, Core CPI: {cpiPeriod} · Core PCE: {pcePeriod}
+            </p>
+          );
+        }
+        return null;
+      })()}
 
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">

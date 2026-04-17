@@ -59,27 +59,38 @@ export default function FedRatesModule() {
       lastUpdated={data?.meta?.FEDFUNDS?.lastUpdated}
       error={error}
     >
-      <div className="flex flex-wrap gap-6 mb-5">
-        <StatCallout
-          label="Fed Funds Rate"
-          value={`${data?.meta?.FEDFUNDS?.latestValue?.toFixed(2) ?? "—"}%`}
-        />
-        <StatCallout
-          label="2Y Treasury"
-          value={`${data?.meta?.DGS2?.latestValue?.toFixed(2) ?? "—"}%`}
-        />
-        <StatCallout
-          label="10Y Treasury"
-          value={`${data?.meta?.DGS10?.latestValue?.toFixed(2) ?? "—"}%`}
-        />
-        <StatCallout
-          label="2s10s Spread"
-          value={`${data?.meta?.T10Y2Y?.latestValue != null ? (data.meta.T10Y2Y.latestValue * 100).toFixed(0) : "—"} bps`}
-          direction={
-            (data?.meta?.T10Y2Y?.latestValue ?? 0) >= 0 ? "up" : "down"
-          }
-        />
-      </div>
+      {(() => {
+        const dgs10Val = data?.meta?.DGS10?.latestValue;
+        const dgs2Val = data?.meta?.DGS2?.latestValue;
+        // Compute spread from displayed yields so it's always internally consistent
+        const spreadBps =
+          dgs10Val != null && dgs2Val != null
+            ? Math.round((dgs10Val - dgs2Val) * 100)
+            : null;
+        return (
+          <div className="flex flex-wrap gap-6 mb-5">
+            <StatCallout
+              label="Fed Funds Rate"
+              value={`${data?.meta?.FEDFUNDS?.latestValue?.toFixed(2) ?? "—"}%`}
+            />
+            <StatCallout
+              label="2Y Treasury"
+              value={`${dgs2Val?.toFixed(2) ?? "—"}%`}
+            />
+            <StatCallout
+              label="10Y Treasury"
+              value={`${dgs10Val?.toFixed(2) ?? "—"}%`}
+            />
+            <StatCallout
+              label="2s10s Spread"
+              value={`${spreadBps != null ? spreadBps : "—"} bps`}
+              direction={
+                spreadBps != null ? (spreadBps >= 0 ? "up" : "down") : undefined
+              }
+            />
+          </div>
+        );
+      })()}
 
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">

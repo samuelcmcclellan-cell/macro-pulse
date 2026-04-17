@@ -1,6 +1,7 @@
 import { YahooQuote } from "../types";
 
 const CACHE_TTL = 14400; // 4 hours
+const SUMMARY_CACHE_TTL = 900; // 15 minutes — sector/summary data should refresh more often
 
 export interface YahooChartResult {
   quotes: YahooQuote[];
@@ -58,7 +59,7 @@ export async function fetchYahooQuoteSummary(symbol: string): Promise<{
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=ytd&interval=1d&includePrePost=false`;
 
   const res = await fetch(url, {
-    next: { revalidate: CACHE_TTL },
+    next: { revalidate: SUMMARY_CACHE_TTL },
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -76,16 +77,26 @@ export async function fetchYahooQuoteSummary(symbol: string): Promise<{
   }
 
   const meta = result.meta ?? {};
-  const previousClose = meta.chartPreviousClose ?? meta.previousClose ?? 0;
-  const currentPrice = meta.regularMarketPrice ?? 0;
+  const timestamps: number[] = result.timestamp ?? [];
+  const indicatorQuotes = result.indicators?.quote?.[0] ?? {};
+  const closes: (number | null)[] = indicatorQuotes.close ?? [];
+
+  // Use the last valid close from chart data as a fallback for current price
+  const lastValidClose = closes.filter((c): c is number => c != null && c > 0).pop() ?? 0;
+  const currentPrice = meta.regularMarketPrice ?? lastValidClose;
+
+  // For YTD base, use chartPreviousClose (the close before the YTD range, i.e. last
+  // trading day of previous year). Do NOT fall back to meta.previousClose — that is
+  // yesterday's close and would turn the YTD calc into a daily return.
+  const ytdBase = meta.chartPreviousClose ?? 0;
   const ytdReturn =
-    previousClose !== 0
-      ? ((currentPrice - previousClose) / previousClose) * 100
+    ytdBase !== 0
+      ? ((currentPrice - ytdBase) / ytdBase) * 100
       : 0;
 
   return {
     currentPrice,
-    previousClose,
+    previousClose: meta.chartPreviousClose ?? meta.previousClose ?? 0,
     ytdReturn,
     name: meta.shortName ?? meta.symbol ?? symbol,
   };
