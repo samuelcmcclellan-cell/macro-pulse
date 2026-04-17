@@ -58,6 +58,8 @@ export const DEFAULT_SECTIONS = [
   "rates",
   "credit",
   "equities",
+  "earnings",
+  "flows",
 ];
 
 export const FRED_SERIES = {
